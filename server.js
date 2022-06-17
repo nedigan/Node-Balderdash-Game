@@ -54,7 +54,7 @@ io.on('connection', socket => {
     });
 
     socket.on('new-word', () => {
-        let wordIndex = Math.floor(Math.random() * words.length);
+        wordIndex = Math.floor(Math.random() * words.length);
         io.emit('recieve-word', words[wordIndex]);
     });
 });
