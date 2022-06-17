@@ -1,5 +1,12 @@
 const socket = io();
 
+let urlParams = new URLSearchParams(window.location.search);
+const nickname = urlParams.get('nickname');
+if (!nickname){
+    window.location.replace("/index.html");
+}
+socket.emit('nickname', nickname);
+
 socket.on('show-player-num', (num) => {
     changePlayerNum(num);  
 
@@ -12,7 +19,7 @@ socket.on('show-player-num', (num) => {
 });
 
 socket.on('fullroom', () => {
-    window.location.replace("/fullgame.html");
+    window.location.replace("/fullroom.html");
 });
 
 function changePlayerNum(number){
@@ -30,8 +37,8 @@ textbox.addEventListener('keypress', (event) => {
     }
 });
 
-socket.on('recieve-message', (message, num) => {
-    displayMessage(message, num);
+socket.on('recieve-message', (message, nickname) => {
+    displayMessage(message, nickname);
 });
 
 socket.on('recieve-word', (word) => {
@@ -39,9 +46,9 @@ socket.on('recieve-word', (word) => {
     document.getElementById('definition').textContent = `Definition: ${word.definition.trim()}`;
 });
 
-function displayMessage(message, num){
+function displayMessage(message, nickname){
     let newMessage = document.createElement("li");
-    newMessage.textContent = `Player ${num}: ${message}`;
+    newMessage.textContent = `${nickname}: ${message}`;
     messages.prepend(newMessage);
 }
 

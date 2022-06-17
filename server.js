@@ -9,6 +9,7 @@ const words = require('./words.json');
 
 //set static folder
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
 
 // connections
 const connections = [];
@@ -19,28 +20,37 @@ const maxPlayers = 4;
 let wordIndex = 0;
 // listen for connections
 io.on('connection', socket => {
+    console.log(connections);
     if (connections.length === maxPlayers){
         console.log('Room is full');
         socket.emit('fullroom');
         return;
     }
 
-    let playerNum = connections.push(socket.id);
-    console.log(`Player ${playerNum} has joined!`);
-    socket.emit('show-player-num', playerNum);
-    socket.emit('recieve-word', words[wordIndex]);
-    socket.emit('connected');
+    socket.on('nickname', (nickname) => {
+        let playerNum = connections.push({id: socket.id, nickname: nickname});
+        console.log(`Player ${playerNum} has joined!`);
+        socket.emit('show-player-num', playerNum);
+        socket.emit('recieve-word', words[wordIndex]);
+    });
+    
 
     socket.on('disconnect', () => {
-        playerNum = connections.indexOf(socket.id) + 1;
+        playerNum = connections.findIndex(object => {
+            return object.id === socket.id;
+        }) + 1;
         connections.splice(playerNum - 1, 1);
         io.emit('disconnections', playerNum);
         console.log(`Player ${playerNum} disconnected!`);
     })
 
     socket.on('send-message', (message) => {
-        const num = connections.indexOf(socket.id) + 1;
-        io.emit('recieve-message', message, num);
+        //const num = connections.indexOf({id: socket.id}) + 1;
+        const index = connections.findIndex(object => {
+            return object.id === socket.id;
+        });
+        const nickname = connections[index].nickname;
+        io.emit('recieve-message', message, nickname);
     });
 
     socket.on('new-word', () => {
