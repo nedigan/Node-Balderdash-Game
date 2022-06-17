@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Multiplayer</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+        <h1 id="player-num">YOU ARE PLAYER 0!</h1>
+        <h2 id="word">Word: </h2>
+        <h2 id="definition">Definition: </h2>
+        <div class="centre">
+            <ul id="messages"></ul>
+            <textarea id="textbox" placeholder="Message..."></textarea>  
+            <div class="buttons">
+                <button id="send">Send</button>
+                <button id="new-word">New Word</button>
+            </div>
+            
+        </div>
+
+        <script src="app.js"></script>
+    </body>
+</html>
