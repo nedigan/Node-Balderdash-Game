@@ -1,16 +1,18 @@
 const socket = io();
 
 socket.on('show-player-num', (num) => {
-    playerNum = num;
     changePlayerNum(num);  
 
     socket.on('disconnections', (disconnected) => {
         if (num > disconnected){
             num -= 1;
-            playerNum = num;
             changePlayerNum(num);
         }
     });
+});
+
+socket.on('fullroom', () => {
+    window.location.replace("/fullgame.html");
 });
 
 function changePlayerNum(number){

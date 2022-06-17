@@ -21,6 +21,7 @@ let wordIndex = 0;
 io.on('connection', socket => {
     if (connections.length === maxPlayers){
         console.log('Room is full');
+        socket.emit('fullroom');
         return;
     }
 
