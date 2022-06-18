@@ -28,6 +28,16 @@ ul {
     flex-direction: column-reverse;
 }
 
+li.disconnect {
+    color: red;
+    background-color: white;
+}
+
+li.connect {
+    color: rgb(108, 194, 108);
+    background-color: white;
+}
+
 ul li {
     background-color: rgb(100, 100, 100);
     padding: 0.5em;

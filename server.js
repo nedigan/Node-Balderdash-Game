@@ -20,7 +20,7 @@ const maxPlayers = 4;
 let wordIndex = 0;
 // listen for connections
 io.on('connection', socket => {
-    console.log(connections);
+    
     if (connections.length === maxPlayers){
         console.log('Room is full');
         socket.emit('fullroom');
@@ -30,8 +30,10 @@ io.on('connection', socket => {
     socket.on('nickname', (nickname) => {
         let playerNum = connections.push({id: socket.id, nickname: nickname});
         console.log(`Player ${playerNum} has joined!`);
+        console.log(connections);
         socket.emit('show-player-num', playerNum);
         socket.emit('recieve-word', words[wordIndex]);
+        socket.broadcast.emit('player-joined', nickname);
     });
     
 
@@ -39,7 +41,15 @@ io.on('connection', socket => {
         playerNum = connections.findIndex(object => {
             return object.id === socket.id;
         }) + 1;
+        
+        // Show left notification
+        const nickname = connections[playerNum - 1].nickname;
+        socket.broadcast.emit('player-left', nickname);
+
+        // Remove player from connections
         connections.splice(playerNum - 1, 1);
+
+        // Update all players current player number
         io.emit('disconnections', playerNum);
         console.log(`Player ${playerNum} disconnected!`);
     })

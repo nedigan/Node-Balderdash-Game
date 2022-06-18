@@ -37,6 +37,20 @@ textbox.addEventListener('keypress', (event) => {
     }
 });
 
+socket.on('player-joined', (nickname) => {
+    let notification = document.createElement("li");
+    notification.className = "connect";
+    notification.textContent = `${nickname} has joined the room!`
+    messages.prepend(notification);
+});
+
+socket.on('player-left', (nickname) => {
+    let notification = document.createElement("li");
+    notification.className = "disconnect";
+    notification.textContent = `${nickname} has left the room!`
+    messages.prepend(notification);
+});
+
 socket.on('recieve-message', (message, nickname) => {
     displayMessage(message, nickname);
 });
