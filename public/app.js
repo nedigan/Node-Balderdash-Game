@@ -34,7 +34,7 @@ function updatePlayerList(connections) {
     for (let i = 0; i < connections.length; i++){
         let playerElement = document.createElement("li");
         playerElement.textContent = `Player ${i + 1}: ${connections[i].nickname}`
-        playerElement.className = connections[i].ready ? "green" : "red";
+        playerElement.className = connections[i].ready ? "ready" : "unready";
         playerList.append(playerElement);
     }
 }
@@ -57,11 +57,14 @@ socket.on('this-player-ready', (player) => {
     }
 });
 
-socket.on('player-left', (nickname) => {
-    let notification = document.createElement("li");
-    notification.className = "disconnect";
-    notification.textContent = `${nickname} has left the room!`
-    messages.prepend(notification);
+socket.on('player-left', (connections) => {
+    updatePlayerList(connections);
+    // Maybe put stuff later when a player leaves
+});
+
+socket.on('countdown', (num) => {
+    const countdownElement = document.getElementById('countdown');
+    countdownElement.textContent = num;
 });
 
 socket.on('recieve-word', (word) => {

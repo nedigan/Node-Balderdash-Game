@@ -42,22 +42,25 @@ io.on('connection', socket => {
         });
 
         connections[index].ready = !connections[index].ready;
-        console.log(connections);
         io.emit('player-ready', connections);//Updates all players player list
         socket.emit('this-player-ready', connections[index]);//Updates this players ready button atm
+
+        const count = connections.filter((obj) => obj.ready === true).length;
+        console.log('Amount of ready players: ', count);
+        if (count === connections.length){
+            countdown();
+        }
     });
 
     socket.on('disconnect', () => {
         playerNum = connections.findIndex(object => {
             return object.id === socket.id;
         }) + 1;
-        
-        // Show left notification
-        const nickname = connections[playerNum - 1].nickname;
-        socket.broadcast.emit('player-left', nickname);
 
         // Remove player from connections
         connections.splice(playerNum - 1, 1);
+        
+        socket.broadcast.emit('player-left', connections);
 
         // Update all players current player number
         io.emit('disconnections', playerNum);
@@ -78,6 +81,17 @@ io.on('connection', socket => {
         io.emit('recieve-word', words[wordIndex]);
     });
 });
+
+function countdown(){
+    const countDown = 3;
+    let count = countDown;
+    let interval = setInterval(() => {
+        if (count === 0){
+            clearInterval(interval);
+        }
+        io.emit('countdown', count--)
+    }, 1000);
+}
 
 // Start server
 const PORT = process.env.PORT || 3000;
