@@ -25,7 +25,7 @@ ul {
     overflow-y: auto;
     max-height: 400px;
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
 }
 
 li.disconnect {
@@ -74,4 +74,12 @@ textarea {
     width: 30%;
     height: 100px;
     resize: none;
+}
+
+.red {
+    color: rgb(255, 68, 68);
+}
+
+.green {
+    color: rgb(10, 209, 10);
 }

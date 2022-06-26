@@ -26,22 +26,35 @@ function changePlayerNum(number){
     document.getElementById('player-num').innerHTML = `YOU ARE PLAYER ${number}!`
 }  
 
-let messages = document.getElementById("messages");
-let textbox = document.getElementById("textbox");
-let button = document.getElementById("send");
-let newWordButton = document.getElementById("new-word");
+const playerList = document.getElementById('playerlist');
+const readyButton = document.getElementById('ready');
 
-textbox.addEventListener('keypress', (event) => {
-    if (event.key === 'Enter')  {
-        button.click();
+function updatePlayerList(connections) {
+    playerList.innerHTML = "";
+    for (let i = 0; i < connections.length; i++){
+        let playerElement = document.createElement("li");
+        playerElement.textContent = `Player ${i + 1}: ${connections[i].nickname}`
+        playerElement.className = connections[i].ready ? "green" : "red";
+        playerList.append(playerElement);
     }
+}
+
+socket.on('player-joined', (connections) => {
+    updatePlayerList(connections);
+    // Maybe put stuff later when players join
+});
+//----------------------------At the moment these two do the same thing
+socket.on('player-ready', (connections) => {
+    updatePlayerList(connections);
+    // Maybe put stuff later when players ready up
 });
 
-socket.on('player-joined', (nickname) => {
-    let notification = document.createElement("li");
-    notification.className = "connect";
-    notification.textContent = `${nickname} has joined the room!`
-    messages.prepend(notification);
+socket.on('this-player-ready', (player) => {
+    if (player.ready) {
+        readyButton.textContent = "Unready";
+    }else{
+        readyButton.textContent = "Ready";
+    }
 });
 
 socket.on('player-left', (nickname) => {
@@ -49,10 +62,6 @@ socket.on('player-left', (nickname) => {
     notification.className = "disconnect";
     notification.textContent = `${nickname} has left the room!`
     messages.prepend(notification);
-});
-
-socket.on('recieve-message', (message, nickname) => {
-    displayMessage(message, nickname);
 });
 
 socket.on('recieve-word', (word) => {
@@ -66,10 +75,6 @@ function displayMessage(message, nickname){
     messages.prepend(newMessage);
 }
 
-button.addEventListener('click', () => {
-    if (textbox.value === "") return;
-    socket.emit('send-message', textbox.value)
-    textbox.value = "";
+readyButton.addEventListener('click', () => {
+    socket.emit('ready-up');
 });
-
-newWordButton.addEventListener('click', () => {socket.emit('new-word');});

@@ -28,14 +28,24 @@ io.on('connection', socket => {
     }
 
     socket.on('nickname', (nickname) => {
-        let playerNum = connections.push({id: socket.id, nickname: nickname});
+        let playerNum = connections.push({id: socket.id, nickname: nickname, ready: false});
         console.log(`Player ${playerNum} has joined!`);
         console.log(connections);
         socket.emit('show-player-num', playerNum);
-        socket.emit('recieve-word', words[wordIndex]);
-        socket.broadcast.emit('player-joined', nickname);
+        //socket.emit('recieve-word', words[wordIndex]);
+        io.emit('player-joined', connections);
     });
     
+    socket.on('ready-up', () => {
+        const index = connections.findIndex(object => {
+            return object.id === socket.id;
+        });
+
+        connections[index].ready = !connections[index].ready;
+        console.log(connections);
+        io.emit('player-ready', connections);//Updates all players player list
+        socket.emit('this-player-ready', connections[index]);//Updates this players ready button atm
+    });
 
     socket.on('disconnect', () => {
         playerNum = connections.findIndex(object => {
