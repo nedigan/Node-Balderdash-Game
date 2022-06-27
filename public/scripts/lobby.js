@@ -5,7 +5,7 @@ const nickname = urlParams.get('nickname');
 if (!nickname){
     window.location.replace("/index.html");
 }
-socket.emit('nickname', nickname);
+socket.emit('add-player', nickname);
 
 socket.on('show-player-num', (num) => {
     changePlayerNum(num);  
@@ -16,6 +16,15 @@ socket.on('show-player-num', (num) => {
             changePlayerNum(num);
         }
     });
+});
+
+socket.on('connect', () => {
+    sessionStorage.setItem('id', socket.id);
+    sessionStorage.setItem('nickname', nickname);
+});
+
+socket.on('start-game', () => {
+    window.location.replace("/game.html");
 });
 
 socket.on('fullroom', () => {
@@ -64,19 +73,19 @@ socket.on('player-left', (connections) => {
 
 socket.on('countdown', (num) => {
     const countdownElement = document.getElementById('countdown');
-    countdownElement.textContent = num;
+    countdownElement.textContent = num;  
 });
 
-socket.on('recieve-word', (word) => {
+/*socket.on('recieve-word', (word) => {
     document.getElementById('word').textContent = `Word: ${word.word.trim()}`;
     document.getElementById('definition').textContent = `Definition: ${word.definition.trim()}`;
-});
+});*/
 
-function displayMessage(message, nickname){
+/*function displayMessage(message, nickname){
     let newMessage = document.createElement("li");
     newMessage.textContent = `${nickname}: ${message}`;
     messages.prepend(newMessage);
-}
+}*/
 
 readyButton.addEventListener('click', () => {
     socket.emit('ready-up');

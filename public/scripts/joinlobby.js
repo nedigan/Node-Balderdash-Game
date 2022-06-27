@@ -6,5 +6,5 @@ join.addEventListener('click', () => {
     console.log('Clicked');
     //if (nickname === "") return;
     console.log('IDK');
-    window.location.href = `/game.html?nickname=${nickname}`;
+    window.location.href = `/lobby.html?nickname=${nickname}`;
 });

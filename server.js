@@ -12,7 +12,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // connections
-const connections = [];
+const mainConnections = [];
+let inGame = false;
+let gameConnections = [];
 
 // Max Number of players
 const maxPlayers = 4;
@@ -20,47 +22,63 @@ const maxPlayers = 4;
 let wordIndex = 0;
 // listen for connections
 io.on('connection', socket => {
-    
-    if (connections.length === maxPlayers){
+    if (mainConnections.length === maxPlayers){
         console.log('Room is full');
         socket.emit('fullroom');
         return;
     }
+    socket.on('player-exists', (id) => {
+        // Use game connections
+        const index = gameConnections.findIndex(object => {
+            return object.id === id;
+        });
+        console.log(`${gameConnections[index].nickname} has joined the game`);
+        mainConnections.push(gameConnections[index]);
+    });
 
-    socket.on('nickname', (nickname) => {
-        let playerNum = connections.push({id: socket.id, nickname: nickname, ready: false});
-        console.log(`Player ${playerNum} has joined!`);
-        console.log(connections);
+    socket.on('add-player', (nickname) => {
+        let playerNum = mainConnections.push({id: socket.id, nickname: nickname, ready: false});
+        console.log(`Player ${playerNum} has connected!`);
+        console.log(mainConnections);
         socket.emit('show-player-num', playerNum);
         //socket.emit('recieve-word', words[wordIndex]);
-        io.emit('player-joined', connections);
+        io.emit('player-joined', mainConnections);
     });
     
+    // Use socket.id as it happens in the lobby
     socket.on('ready-up', () => {
-        const index = connections.findIndex(object => {
+        const index = mainConnections.findIndex(object => {
             return object.id === socket.id;
         });
 
-        connections[index].ready = !connections[index].ready;
-        io.emit('player-ready', connections);//Updates all players player list
-        socket.emit('this-player-ready', connections[index]);//Updates this players ready button atm
+        mainConnections[index].ready = !mainConnections[index].ready;
+        io.emit('player-ready', mainConnections);//Updates all players player list
+        socket.emit('this-player-ready', mainConnections[index]);//Updates this players ready button atm
 
-        const count = connections.filter((obj) => obj.ready === true).length;
+        const count = mainConnections.filter((obj) => obj.ready === true).length;
         console.log('Amount of ready players: ', count);
-        if (count === connections.length){
+        if (count === mainConnections.length){
+            Object.assign(gameConnections, mainConnections);
             countdown();
         }
     });
 
+    socket.on('request-nickname', (id) => {
+        const index = mainConnections.findIndex(object => {
+            return object.id === id;
+        });
+
+        socket.emit('recieve-nickname',mainConnections[index].nickname);
+    });
+
     socket.on('disconnect', () => {
-        playerNum = connections.findIndex(object => {
+        playerNum = mainConnections.findIndex(object => {
             return object.id === socket.id;
         }) + 1;
-
         // Remove player from connections
-        connections.splice(playerNum - 1, 1);
+        mainConnections.splice(playerNum - 1, 1);
         
-        socket.broadcast.emit('player-left', connections);
+        socket.broadcast.emit('player-left', mainConnections);
 
         // Update all players current player number
         io.emit('disconnections', playerNum);
@@ -69,10 +87,10 @@ io.on('connection', socket => {
 
     socket.on('send-message', (message) => {
         //const num = connections.indexOf({id: socket.id}) + 1;
-        const index = connections.findIndex(object => {
+        const index = mainConnections.findIndex(object => {
             return object.id === socket.id;
         });
-        const nickname = connections[index].nickname;
+        const nickname = mainConnections[index].nickname;
         io.emit('recieve-message', message, nickname);
     });
 
@@ -88,8 +106,12 @@ function countdown(){
     let interval = setInterval(() => {
         if (count === 0){
             clearInterval(interval);
+            inGame = true;
+            io.emit('start-game');
+            return
         }
-        io.emit('countdown', count--)
+        console.log(count);
+        io.emit('countdown', count--);
     }, 1000);
 }
 

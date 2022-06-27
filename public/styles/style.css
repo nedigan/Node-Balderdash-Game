@@ -95,4 +95,5 @@ h3 {
     transform: translate(-50%, -50%);
     font-size: 120px;
     pointer-events:none;
+    text-decoration: none;
 }

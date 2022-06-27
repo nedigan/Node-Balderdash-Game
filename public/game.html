@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Multiplayer</title>
-        <script src="/socket.io/socket.io.js"></script>
-        <link href="style.css" rel="stylesheet">
-    </head>
-    <body>
-        <h1>Balderdash</h1>
-        <h2 id="player-num">YOU ARE PLAYER 0!</h2>
-        <div class="centre">
-            <h1 class="countdown" id="countdown"></h1>
-            <h3>Players:</h3>
-            <ul id="playerlist"></ul> 
-            <div class="buttons">
-                <button id="ready">Ready</button>
-            </div>
-            
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balderdash</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="title">LETS BEGIN</h1>
 
-        <script src="app.js"></script>
-    </body>
+    <script src="scripts/game.js"></script>
+</body>
 </html>
