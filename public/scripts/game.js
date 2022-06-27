@@ -3,6 +3,10 @@ const id =  sessionStorage.getItem('id');
 let nickname = sessionStorage.getItem('nickname');
 
 socket.on('connect', () => {
+   socket.emit('check-game-status');
+});
+
+socket.on('game-ready', () => {
     socket.emit('player-exists', id);
     socket.emit('request-nickname', id);
 });
@@ -13,6 +17,10 @@ socket.on('fullroom', () => {
 
 socket.on('recieve-nickname', (nick) => {
     nickname = nick;
+});
+
+socket.on('no-game-playing', () =>{
+    window.location.replace('/index.html');
 });
 
 if (!nickname){

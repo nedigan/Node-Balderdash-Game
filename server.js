@@ -36,9 +36,16 @@ io.on('connection', socket => {
         mainConnections.push(gameConnections[index]);
     });
 
+    socket.on('check-game-status', () => {
+        if (gameConnections.length < 1){ // CHECK IF GAME HAS STARTED
+            io.emit('no-game-playing'); // SEND PLAYERS BACK TO MAIN PAGE
+            return;
+        }
+        socket.emit('game-ready'); // IF GAME HAS STARTED, PLAYER STAY ON PAGE
+    });
+
     socket.on('add-player', (nickname) => {
         let playerNum = mainConnections.push({id: socket.id, nickname: nickname, ready: false});
-        console.log(`Player ${playerNum} has connected!`);
         console.log(mainConnections);
         socket.emit('show-player-num', playerNum);
         //socket.emit('recieve-word', words[wordIndex]);
