@@ -1,3 +1,5 @@
+// NETWORKING CODE
+
 const socket = io();
 const id =  sessionStorage.getItem('id');
 let nickname = sessionStorage.getItem('nickname');
@@ -29,3 +31,26 @@ if (!nickname){
 
 let title = document.getElementById('title');
 title.textContent = nickname;
+
+// GAME CODE
+
+const doneButton = document.getElementById('done');
+const textbox = document.getElementById('textbox');
+const wordName = document.getElementById('word');
+
+textbox.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter')  {
+        event.preventDefault();
+        doneButton.click();
+    }
+});
+
+doneButton.addEventListener('click', () => {
+    let definition = textbox.value;
+    socket.emit('send-definition', definition, id);
+    textbox.value = "";
+});
+
+socket.on('show-current-word', (word) => {
+    wordName.textContent = `Word: ${word}`;
+});

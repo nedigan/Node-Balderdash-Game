@@ -87,6 +87,7 @@ socket.on('countdown', (num) => {
     messages.prepend(newMessage);
 }*/
 
+
 readyButton.addEventListener('click', () => {
     socket.emit('ready-up');
 });

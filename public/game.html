@@ -6,11 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Balderdash</title>
     <script src="/socket.io/socket.io.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-    <h1 id="title">LETS BEGIN</h1>
-
+    <div class="centre">
+        <h1 id="title">LETS BEGIN</h1>
+        <h2 id="word">Word: </h2>
+        <textarea id="textbox" placeholder="Definition..."></textarea>
+        <div class="buttons">
+            <button id="done">Done</button>
+        </div>
+    </div>
+    
     <script src="scripts/game.js"></script>
 </body>
 </html>

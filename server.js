@@ -13,13 +13,18 @@ app.use(express.json());
 
 // connections
 const mainConnections = [];
-let inGame = false;
 let gameConnections = [];
+
+// game variables
+let currentPlayerDefintions = [];
 
 // Max Number of players
 const maxPlayers = 4;
 
-let wordIndex = 0;
+let wordIndex = Math.floor(Math.random() * words.length);
+// Index 0 is correct definition
+currentPlayerDefintions.push({definition: words[wordIndex].definition});
+
 // listen for connections
 io.on('connection', socket => {
     if (mainConnections.length === maxPlayers){
@@ -34,14 +39,22 @@ io.on('connection', socket => {
         });
         console.log(`${gameConnections[index].nickname} has joined the game`);
         mainConnections.push(gameConnections[index]);
+        socket.emit('show-current-word', words[wordIndex].word);
     });
 
     socket.on('check-game-status', () => {
-        if (gameConnections.length < 1){ // CHECK IF GAME HAS STARTED
+        if (gameConnections.length < 1){ // IF GAME HASN'T STARTED
             io.emit('no-game-playing'); // SEND PLAYERS BACK TO MAIN PAGE
             return;
         }
+        
         socket.emit('game-ready'); // IF GAME HAS STARTED, PLAYER STAY ON PAGE
+    });
+
+    socket.on('send-definition', (definition, id) => {
+        if (currentPlayerDefintions.length === maxPlayers + 1) return;
+        currentPlayerDefintions.push({definition: definition, id: id});
+        console.log(currentPlayerDefintions);
     });
 
     socket.on('add-player', (nickname) => {
@@ -89,9 +102,8 @@ io.on('connection', socket => {
 
         // Update all players current player number
         io.emit('disconnections', playerNum);
-        console.log(`Player ${playerNum} disconnected!`);
     })
-
+    /*
     socket.on('send-message', (message) => {
         //const num = connections.indexOf({id: socket.id}) + 1;
         const index = mainConnections.findIndex(object => {
@@ -99,12 +111,7 @@ io.on('connection', socket => {
         });
         const nickname = mainConnections[index].nickname;
         io.emit('recieve-message', message, nickname);
-    });
-
-    socket.on('new-word', () => {
-        wordIndex = Math.floor(Math.random() * words.length);
-        io.emit('recieve-word', words[wordIndex]);
-    });
+    });*/
 });
 
 function countdown(){
@@ -113,7 +120,6 @@ function countdown(){
     let interval = setInterval(() => {
         if (count === 0){
             clearInterval(interval);
-            inGame = true;
             io.emit('start-game');
             return
         }
