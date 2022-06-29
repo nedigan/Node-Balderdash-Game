@@ -52,9 +52,11 @@ io.on('connection', socket => {
     });
 
     socket.on('send-definition', (definition, id) => {
-        if (currentPlayerDefintions.length === maxPlayers + 1) return;
         currentPlayerDefintions.push({definition: definition, id: id});
         console.log(currentPlayerDefintions);
+        if (currentPlayerDefintions.length === maxPlayers + 1) {
+            io.emit('players-finished', currentPlayerDefintions);
+        }
     });
 
     socket.on('add-player', (nickname) => {

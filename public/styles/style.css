@@ -28,14 +28,9 @@ ul {
     flex-direction: row;
 }
 
-li.disconnect {
-    color: red;
-    background-color: white;
-}
-
-li.connect {
-    color: rgb(108, 194, 108);
-    background-color: white;
+.verticalList {
+    flex-direction: column;
+    width: 50%;
 }
 
 ul li {
@@ -82,6 +77,10 @@ textarea {
 
 .ready {
     color: rgb(10, 209, 10);
+}
+
+.selected {
+    color: yellow;
 }
 
 h3 {
