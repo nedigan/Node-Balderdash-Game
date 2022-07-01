@@ -6,11 +6,16 @@ const server = http.createServer(app);
 const socketio = require('socket.io');
 const io = socketio(server);
 const words = require('./words.json');
-const { mainModule } = require('process');
+const scores = require('./routes/scores');
+const { setUncaughtExceptionCaptureCallback } = require('process');
+
 
 //set static folder
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.set('view engine','pug');
 app.use(express.json());
+app.use('/scores', scores);
 
 // connections
 const currentConnections = [];
@@ -109,6 +114,7 @@ io.on('connection', socket => {
                 console.log(`${gameConnections[tempPlayerIndex].nickname}'s score: ${gameConnections[tempPlayerIndex].score}`);
             }
             console.log(currentPlayerDefintions);
+            io.emit('display-scores');
         }
     });
 
@@ -177,3 +183,7 @@ function countdown(countDown){
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Sever listening on port ${PORT}`));
+
+
+module.exports.gameConnections = gameConnections;
+

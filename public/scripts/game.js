@@ -81,6 +81,10 @@ socket.on('players-finished', (definitions) => {
 
 });
 
+socket.on('display-scores', () => {
+    window.location.replace('/scores');
+});
+
 function selectDefiniton(prev, current){
     // Only be able to select one
     if (prev) prev.className = '';

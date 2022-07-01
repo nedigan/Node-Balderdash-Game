@@ -1,0 +1,10 @@
+html
+    head 
+        link(rel='stylesheet' href='../styles/style.css' type='text/css')
+        title= title 
+    body 
+        div(class='centre')
+            h1= title 
+            ul 
+                each player in players
+                    li= player.nickname + ": " + player.score
