@@ -46,9 +46,13 @@ textbox.addEventListener('keypress', (event) => {
     }
 });
 
+socket.on('already-submitted', () => {
+    playerFinished([doneButton, textbox, wordName]);
+});
+
 doneButton.addEventListener('click', () => {
     let definition = textbox.value;
-    playerFinished();
+    playerFinished([doneButton, textbox, wordName]);
     socket.emit('send-definition', definition, id);
     textbox.value = "";
 });
@@ -57,19 +61,21 @@ socket.on('show-current-word', (word) => {
     wordName.textContent = `Word: ${word}`;
 });
 
+let selectedDefinitionIndex = null;
+
 socket.on('players-finished', (definitions) => {
     const correctDefinition = definitions[0];
     // Randomly suffle the definitions
     definitions.sort(() => Math.random() - 0.5);
-    const list = displayDefinitions(definitions);
-    let selectedDefinition = list.children[0]; // Default is first index so player cant not select one
+    const list = displayDefinitions(definitions, correctDefinition);
+    selectedDefinitionIndex = 0; // Default is first index so player cant not select one
     list.children[0].className = 'selected'; // makes text yellow to indicate selection
 
     for (let i = 0, len = list.children.length; i < len; i++)
     {
         list.children[i].onclick = function(){
-            selectDefiniton(selectedDefinition, list.children[i]);
-            selectedDefinition = list.children[i];
+            selectDefiniton(list.children[selectedDefinitionIndex], list.children[i]);
+            selectedDefinitionIndex = i;
         }
     }
 
@@ -81,8 +87,8 @@ function selectDefiniton(prev, current){
     current.className = 'selected';
 }
 
-function displayDefinitions(definitions){
-    waitingText.remove();
+function displayDefinitions(definitions, correctDefinition){
+    waitingText.innerHTML = "";
     const centreDiv = document.getElementById('centre');
 
     const definitionsList = document.createElement('ul');
@@ -103,13 +109,19 @@ function displayDefinitions(definitions){
     centreDiv.appendChild(buttonsDiv);
     buttonsDiv.appendChild(answerButton);
 
+    // Lock in answer
+    answerButton.addEventListener('click', () => {
+        socket.emit('lock-in-answer', id, definitions[selectedDefinitionIndex])
+        playerFinished([answerButton, definitionsList])
+    });
+
     return definitionsList;
 };
 
-function playerFinished(){
-    doneButton.remove();
-    textbox.remove();
-    wordName.remove();
+function playerFinished(removeElementList){
+    for (let i = 0; i < removeElementList.length; i++){
+        removeElementList[i].remove();
+    }
 
     waitingText.textContent = "Waiting for other players..."
     document.body.append(waitingText);

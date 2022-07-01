@@ -6,28 +6,31 @@ const server = http.createServer(app);
 const socketio = require('socket.io');
 const io = socketio(server);
 const words = require('./words.json');
+const { mainModule } = require('process');
 
 //set static folder
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
 // connections
-const mainConnections = [];
+const currentConnections = [];
 let gameConnections = [];
 
 // game variables
 let currentPlayerDefintions = [];
+let numPlayersSubmitted = 0;
 
 // Max Number of players
 const maxPlayers = 4;
 
 let wordIndex = Math.floor(Math.random() * words.length);
 // Index 0 is correct definition
-currentPlayerDefintions.push({definition: words[wordIndex].definition});
+currentPlayerDefintions.push({definition: words[wordIndex].definition, playersChoosing: []});
 
 // listen for connections
 io.on('connection', socket => {
-    if (mainConnections.length === maxPlayers){
+    let playerid = null;
+    if (currentConnections.length === maxPlayers){
         console.log('Room is full');
         socket.emit('fullroom');
         return;
@@ -37,8 +40,22 @@ io.on('connection', socket => {
         const index = gameConnections.findIndex(object => {
             return object.id === id;
         });
+
+        const defIndex = currentPlayerDefintions.findIndex(object => {
+            return object.id === id;
+        });
+
+        currentConnections.push(gameConnections[index]);
+        playerid = id;
+
+        // If the player has reconnected and already submitted
+        if (defIndex > -1){
+            socket.emit('already-submitted');
+            console.log(`${gameConnections[index].nickname} has already submitted`);
+            return;
+        }
+
         console.log(`${gameConnections[index].nickname} has joined the game`);
-        mainConnections.push(gameConnections[index]);
         socket.emit('show-current-word', words[wordIndex].word);
     });
 
@@ -52,72 +69,99 @@ io.on('connection', socket => {
     });
 
     socket.on('send-definition', (definition, id) => {
-        currentPlayerDefintions.push({definition: definition, id: id});
+        if (currentPlayerDefintions.length - 1 === currentConnections.length) return;
+
+        currentPlayerDefintions.push({definition: definition, id: id, playersChoosing: []});
         console.log(currentPlayerDefintions);
         if (currentPlayerDefintions.length === maxPlayers + 1) {
             io.emit('players-finished', currentPlayerDefintions);
         }
     });
 
+    socket.on('lock-in-answer', (id, answer) => {
+        if (numPlayersSubmitted >= currentConnections.length ) return;
+
+        numPlayersSubmitted += 1;
+        const chosenDefinitionIndex = currentPlayerDefintions.findIndex(object => {
+            return object.id === answer.id;
+        });
+
+        const thisPlayerIndex = gameConnections.findIndex(object => {
+            return object.id === id;
+        });
+
+        if (answer.definition === currentPlayerDefintions[0].definition){ // If player chose correct
+            console.log('correct');
+            gameConnections[thisPlayerIndex].score += 1;
+            currentPlayerDefintions[0].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
+        }else{ // Chose another players made up definition
+            currentPlayerDefintions[chosenDefinitionIndex].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
+        }
+
+        // when all players have locked in their selections, finalise player scores
+        if (numPlayersSubmitted === currentConnections.length){
+            for (let i = 1; i < currentPlayerDefintions.length; i++){
+                const tempPlayerIndex = gameConnections.findIndex(object => {
+                    return object.id === currentPlayerDefintions[i].id;
+                });
+
+                gameConnections[tempPlayerIndex].score += currentPlayerDefintions[i].playersChoosing.length;
+                console.log(`${gameConnections[tempPlayerIndex].nickname}'s score: ${gameConnections[tempPlayerIndex].score}`);
+            }
+            console.log(currentPlayerDefintions);
+        }
+    });
+
     socket.on('add-player', (nickname) => {
-        let playerNum = mainConnections.push({id: socket.id, nickname: nickname, ready: false});
-        console.log(mainConnections);
+        let playerNum = currentConnections.push({id: socket.id, nickname: nickname, ready: false, score: 0});
+        console.log(currentConnections);
         socket.emit('show-player-num', playerNum);
         //socket.emit('recieve-word', words[wordIndex]);
-        io.emit('player-joined', mainConnections);
+        io.emit('player-joined', currentConnections);
     });
     
     // Use socket.id as it happens in the lobby
     socket.on('ready-up', () => {
-        const index = mainConnections.findIndex(object => {
+        const index = currentConnections.findIndex(object => {
             return object.id === socket.id;
         });
 
-        mainConnections[index].ready = !mainConnections[index].ready;
-        io.emit('player-ready', mainConnections);//Updates all players player list
-        socket.emit('this-player-ready', mainConnections[index]);//Updates this players ready button atm
+        currentConnections[index].ready = !currentConnections[index].ready;
+        io.emit('player-ready', currentConnections);//Updates all players player list
+        socket.emit('this-player-ready', currentConnections[index]);//Updates this players ready button atm
 
-        const count = mainConnections.filter((obj) => obj.ready === true).length;
+        const count = currentConnections.filter((obj) => obj.ready === true).length;
         console.log('Amount of ready players: ', count);
-        if (count === mainConnections.length){
-            Object.assign(gameConnections, mainConnections);
-            countdown();
+        if (count === currentConnections.length){
+            Object.assign(gameConnections, currentConnections); // Assign by value not ref
+            countdown(3);
         }
     });
 
     socket.on('request-nickname', (id) => {
-        const index = mainConnections.findIndex(object => {
+        const index = currentConnections.findIndex(object => {
             return object.id === id;
         });
 
-        socket.emit('recieve-nickname',mainConnections[index].nickname);
+        socket.emit('recieve-nickname',currentConnections[index].nickname);
     });
 
     socket.on('disconnect', () => {
-        playerNum = mainConnections.findIndex(object => {
-            return object.id === socket.id;
+        playerNum = currentConnections.findIndex(object => {
+            return object.id === playerid ? playerid : socket.id;
         }) + 1;
+        console.log('DISCONNECTED');
         // Remove player from connections
-        mainConnections.splice(playerNum - 1, 1);
+        currentConnections.splice(playerNum - 1, 1);
         
-        socket.broadcast.emit('player-left', mainConnections);
+        socket.broadcast.emit('player-left', currentConnections);
 
         // Update all players current player number
         io.emit('disconnections', playerNum);
     })
-    /*
-    socket.on('send-message', (message) => {
-        //const num = connections.indexOf({id: socket.id}) + 1;
-        const index = mainConnections.findIndex(object => {
-            return object.id === socket.id;
-        });
-        const nickname = mainConnections[index].nickname;
-        io.emit('recieve-message', message, nickname);
-    });*/
 });
 
-function countdown(){
-    const countDown = 3;
+function countdown(countDown){
     let count = countDown;
     let interval = setInterval(() => {
         if (count === 0){
