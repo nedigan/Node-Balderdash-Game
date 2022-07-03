@@ -15,6 +15,7 @@ router.get('/', (req, res) => {
 
         // Pass players who chose this players definition to totalPlayerScores to show them on the score board
         scores.totalPlayerScores[i].playersChoosing = scores.currentPlayerScores[currentScoreIndex].playersChoosing;
+        scores.totalPlayerScores[i].choseCorrect = scores.currentPlayerScores[currentScoreIndex].choseCorrect;
     }
 
     res.render('scores', { title: 'Scoreboard', players: scores.totalPlayerScores});

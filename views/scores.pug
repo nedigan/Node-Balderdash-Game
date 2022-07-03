@@ -5,14 +5,26 @@ html
     body 
         div(class='centre')
             h1= title 
-            ul(class='verticalList')
+            ul(class='verticalList scoreBoardList')
                 each player in players
                     li
-                        span= player.nickname + ": " + player.score
+                        h3= player.nickname + ":"
+                        span= 'Correct: ' + (player.choseCorrect ? '+1' : '0')
                         br
                         span= 'Players Fooled: '
                         for fooledPlayer, index in player.playersChoosing 
                             span= fooledPlayer
                             if (index < player.playersChoosing.length - 1)
                                 span= ', '
+                        if (player.playersChoosing.length > 0)
+                            span= ' = ' + '+' + player.playersChoosing.length
+                        else 
+                            span= 'None'
+                        br
+                        span= 'Score: +' + player.score
+                        br
+                        br
+                        span= 'Total Score: ' + (player.score - player.playersChoosing.length - (player.choseCorrect ? 1 : 0)) + ' + ' + (player.playersChoosing.length + (player.choseCorrect ? 1 : 0)) + ' = ' + player.score 
+                        
+                        
 

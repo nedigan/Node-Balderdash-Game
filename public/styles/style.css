@@ -33,6 +33,10 @@ ul {
     width: 50%;
 }
 
+.scoreBoardList {
+    max-height: 700px;
+}
+
 .buttonList li {
     border-radius: 10px 10px 10px 10px;
     background-color: rgb(139, 135, 135);

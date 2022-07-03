@@ -76,7 +76,7 @@ io.on('connection', socket => {
     socket.on('send-definition', (definition, id) => {
         if (currentPlayerDefintions.length - 1 === currentConnections.length) return;
 
-        currentPlayerDefintions.push({definition: definition, id: id, playersChoosing: []});
+        currentPlayerDefintions.push({definition: definition, id: id, playersChoosing: [], choseCorrect: false});
         console.log(currentPlayerDefintions);
         if (currentPlayerDefintions.length === maxPlayers + 1) {
             io.emit('players-finished', currentPlayerDefintions);
@@ -95,9 +95,14 @@ io.on('connection', socket => {
             return object.id === id;
         });
 
+        const thisDefinitionIndex = currentPlayerDefintions.findIndex(object => {
+            return object.id === id;
+        });
+
         if (answer.definition === currentPlayerDefintions[0].definition){ // If player chose correct
             console.log('correct');
             gameConnections[thisPlayerIndex].score += 1;
+            currentPlayerDefintions[thisDefinitionIndex].choseCorrect = true;
             currentPlayerDefintions[0].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
         }else{ // Chose another players made up definition
             currentPlayerDefintions[chosenDefinitionIndex].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
