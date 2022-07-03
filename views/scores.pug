@@ -5,6 +5,14 @@ html
     body 
         div(class='centre')
             h1= title 
-            ul 
+            ul(class='verticalList')
                 each player in players
-                    li= player.nickname + ": " + player.score
+                    li
+                        span= player.nickname + ": " + player.score
+                        br
+                        span= 'Players Fooled: '
+                        for fooledPlayer, index in player.playersChoosing 
+                            span= fooledPlayer
+                            if (index < player.playersChoosing.length - 1)
+                                span= ', '
+

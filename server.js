@@ -185,5 +185,6 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Sever listening on port ${PORT}`));
 
 
-module.exports.gameConnections = gameConnections;
+module.exports.totalPlayerScores = gameConnections;
+module.exports.currentPlayerScores = currentPlayerDefintions;
 

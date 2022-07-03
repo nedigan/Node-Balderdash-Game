@@ -96,7 +96,7 @@ function displayDefinitions(definitions, correctDefinition){
     const centreDiv = document.getElementById('centre');
 
     const definitionsList = document.createElement('ul');
-    definitionsList.className = 'verticalList';
+    definitionsList.className = 'verticalList buttonList';
     for (let i = 0; i < definitions.length; i++){
         let definition = document.createElement('li');
         definition.textContent = definitions[i].definition;
