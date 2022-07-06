@@ -28,21 +28,25 @@ ul {
     flex-direction: row;
 }
 
-.verticalList {
+.vertical-list {
     flex-direction: column;
     width: 50%;
 }
 
-.scoreBoardList {
+.score-board-list {
     max-height: 700px;
 }
 
-.buttonList li {
+.white {
+    color: white;
+}
+
+.button-list li {
     border-radius: 10px 10px 10px 10px;
     background-color: rgb(139, 135, 135);
 }
 
-.buttonList li:hover {
+.button-list li:hover {
     border: 5px solid white;
 }
 
@@ -101,7 +105,7 @@ h3 {
 }
 
 .countdown {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);

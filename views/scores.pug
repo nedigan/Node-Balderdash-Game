@@ -1,30 +1,40 @@
-html
+html(lang='en')
     head 
         link(rel='stylesheet' href='../styles/style.css' type='text/css')
         title= title 
+        script(src="/socket.io/socket.io.js")
+        meta(name="viewport" content="width=device-width, initial-scale=1.0")
+        meta(http-equiv="X-UA-Compatible" content="IE=edge")
+        meta(charset="UTF-8")
     body 
         div(class='centre')
             h1= title 
-            ul(class='verticalList scoreBoardList')
+            h1(class="countdown" id="countdown")
+            ul(class='vertical-list score-board-list')
                 each player in players
                     li
                         h3= player.nickname + ":"
-                        span= 'Correct: ' + (player.choseCorrect ? '+1' : '0')
+                        span= 'Correct: ' 
+                        span(class='white')= (player.choseCorrect ? '+1' : '0')
                         br
                         span= 'Players Fooled: '
                         for fooledPlayer, index in player.playersChoosing 
-                            span= fooledPlayer
+                            span(class='white')= fooledPlayer
                             if (index < player.playersChoosing.length - 1)
-                                span= ', '
+                                span(class='white')= ', '
                         if (player.playersChoosing.length > 0)
-                            span= ' = ' + '+' + player.playersChoosing.length
+                            span(class='white')= ' = ' + '+' + player.playersChoosing.length
                         else 
-                            span= 'None'
+                            span(class='white')= 'None'
                         br
-                        span= 'Score: +' + player.score
+                        span= 'Score: '  
+                        span(class='white')= '+' + player.score
                         br
                         br
-                        span= 'Total Score: ' + (player.score - player.playersChoosing.length - (player.choseCorrect ? 1 : 0)) + ' + ' + (player.playersChoosing.length + (player.choseCorrect ? 1 : 0)) + ' = ' + player.score 
-                        
-                        
+                        span= 'Total Score: '
+                        span(class='white')= (player.score - player.playersChoosing.length - (player.choseCorrect ? 1 : 0)) + ' + ' + (player.playersChoosing.length + (player.choseCorrect ? 1 : 0)) + ' = ' + player.score 
+            div(class='buttons')
+                button(id='next-round')='Next Round'
+                button(id='back-to-lobby')='Back To Lobby'         
+    script(src='../scripts/scoreboard.js')                    
 

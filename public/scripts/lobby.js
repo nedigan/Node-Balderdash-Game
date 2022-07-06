@@ -3,7 +3,7 @@ const socket = io();
 let urlParams = new URLSearchParams(window.location.search);
 const nickname = urlParams.get('nickname');
 if (!nickname){
-    window.location.replace("/index.html");
+    window.location.replace("/");
 }
 socket.emit('add-player', nickname);
 

@@ -7,7 +7,6 @@ const socketio = require('socket.io');
 const io = socketio(server);
 const words = require('./words.json');
 const scores = require('./routes/scores');
-const { setUncaughtExceptionCaptureCallback } = require('process');
 
 
 //set static folder
@@ -22,15 +21,16 @@ const currentConnections = [];
 let gameConnections = [];
 
 // game variables
-let currentPlayerDefintions = [];
+let currentPlayerDefinitions = [];
 let numPlayersSubmitted = 0;
+let nextRoundVote = 0;
 
 // Max Number of players
 const maxPlayers = 4;
 
 let wordIndex = Math.floor(Math.random() * words.length);
 // Index 0 is correct definition
-currentPlayerDefintions.push({definition: words[wordIndex].definition, playersChoosing: []});
+currentPlayerDefinitions.push({definition: words[wordIndex].definition, playersChoosing: []});
 
 // listen for connections
 io.on('connection', socket => {
@@ -40,19 +40,29 @@ io.on('connection', socket => {
         socket.emit('fullroom');
         return;
     }
+
+    //------------------------------------------------------
+    //               GAME EVENTS
+    //------------------------------------------------------
+
+    // Checks if the player exists in the lobby and calls events accordingly
     socket.on('player-exists', (id) => {
         // Use game connections
         const index = gameConnections.findIndex(object => {
             return object.id === id;
         });
 
-        const defIndex = currentPlayerDefintions.findIndex(object => {
+        const defIndex = currentPlayerDefinitions.findIndex(object => {
             return object.id === id;
         });
 
-        currentConnections.push(gameConnections[index]);
-        playerid = id;
-
+        if (index > -1){
+            currentConnections.push(gameConnections[index]);
+            playerid = id;   
+        }else{
+            socket.emit('send-to-home');
+        }
+        
         // If the player has reconnected and already submitted
         if (defIndex > -1){
             socket.emit('already-submitted');
@@ -60,10 +70,10 @@ io.on('connection', socket => {
             return;
         }
 
-        console.log(`${gameConnections[index].nickname} has joined the game`);
         socket.emit('show-current-word', words[wordIndex].word);
     });
 
+    // Checks if the game has started, if it hasnt throws an error and sends users back
     socket.on('check-game-status', () => {
         if (gameConnections.length < 1){ // IF GAME HASN'T STARTED
             io.emit('no-game-playing'); // SEND PLAYERS BACK TO MAIN PAGE
@@ -73,21 +83,28 @@ io.on('connection', socket => {
         socket.emit('game-ready'); // IF GAME HAS STARTED, PLAYER STAY ON PAGE
     });
 
+    // Sends the users definition to the server
     socket.on('send-definition', (definition, id) => {
-        if (currentPlayerDefintions.length - 1 === currentConnections.length) return;
+        if (currentPlayerDefinitions.length - 1 === currentConnections.length) return;
+        const idIndex = currentPlayerDefinitions.findIndex(object => {
+            return object.id === id;
+        });
 
-        currentPlayerDefintions.push({definition: definition, id: id, playersChoosing: [], choseCorrect: false});
-        console.log(currentPlayerDefintions);
-        if (currentPlayerDefintions.length === maxPlayers + 1) {
-            io.emit('players-finished', currentPlayerDefintions);
+        if (idIndex > -1) return;
+
+        currentPlayerDefinitions.push({definition: definition, id: id, playersChoosing: [], choseCorrect: false});
+        console.log('Current player definitions: ',currentPlayerDefinitions);
+        if (currentPlayerDefinitions.length === maxPlayers + 1) {
+            io.emit('players-finished', currentPlayerDefinitions);
         }
     });
 
+    // locks in this players answer for which definition they think is correct
     socket.on('lock-in-answer', (id, answer) => {
         if (numPlayersSubmitted >= currentConnections.length ) return;
 
         numPlayersSubmitted += 1;
-        const chosenDefinitionIndex = currentPlayerDefintions.findIndex(object => {
+        const chosenDefinitionIndex = currentPlayerDefinitions.findIndex(object => {
             return object.id === answer.id;
         });
 
@@ -95,48 +112,55 @@ io.on('connection', socket => {
             return object.id === id;
         });
 
-        const thisDefinitionIndex = currentPlayerDefintions.findIndex(object => {
+        const thisDefinitionIndex = currentPlayerDefinitions.findIndex(object => {
             return object.id === id;
         });
 
-        if (answer.definition === currentPlayerDefintions[0].definition){ // If player chose correct
+        if (answer.definition === currentPlayerDefinitions[0].definition){ // If player chose correct
             console.log('correct');
             gameConnections[thisPlayerIndex].score += 1;
-            currentPlayerDefintions[thisDefinitionIndex].choseCorrect = true;
-            currentPlayerDefintions[0].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
+            currentPlayerDefinitions[thisDefinitionIndex].choseCorrect = true;
+            currentPlayerDefinitions[0].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
         }else{ // Chose another players made up definition
-            currentPlayerDefintions[chosenDefinitionIndex].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
+            currentPlayerDefinitions[chosenDefinitionIndex].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
         }
 
         // when all players have locked in their selections, finalise player scores
         if (numPlayersSubmitted === currentConnections.length){
-            for (let i = 1; i < currentPlayerDefintions.length; i++){
+            for (let i = 1; i < currentPlayerDefinitions.length; i++){
                 const tempPlayerIndex = gameConnections.findIndex(object => {
-                    return object.id === currentPlayerDefintions[i].id;
+                    return object.id === currentPlayerDefinitions[i].id;
                 });
 
-                gameConnections[tempPlayerIndex].score += currentPlayerDefintions[i].playersChoosing.length;
+                gameConnections[tempPlayerIndex].score += currentPlayerDefinitions[i].playersChoosing.length;
                 console.log(`${gameConnections[tempPlayerIndex].nickname}'s score: ${gameConnections[tempPlayerIndex].score}`);
             }
-            console.log(currentPlayerDefintions);
+            console.log('Current player definitions', currentPlayerDefinitions);
+            console.log('Game connections', gameConnections);
             io.emit('display-scores');
         }
     });
 
+    //------------------------------------------------------
+    //               LOBBY EVENTS
+    //------------------------------------------------------
+
+    // Adds players to current connections when joining lobby
     socket.on('add-player', (nickname) => {
         let playerNum = currentConnections.push({id: socket.id, nickname: nickname, ready: false, score: 0});
-        console.log(currentConnections);
+
         socket.emit('show-player-num', playerNum);
         //socket.emit('recieve-word', words[wordIndex]);
         io.emit('player-joined', currentConnections);
     });
     
-    // Use socket.id as it happens in the lobby
+    // Tells players another player has readied up, if everyone is ready the game begins
     socket.on('ready-up', () => {
         const index = currentConnections.findIndex(object => {
-            return object.id === socket.id;
+            return object.id === socket.id;  // Use socket.id as it happens in the lobby
         });
 
+        if (index < 0) return;
         currentConnections[index].ready = !currentConnections[index].ready;
         io.emit('player-ready', currentConnections);//Updates all players player list
         socket.emit('this-player-ready', currentConnections[index]);//Updates this players ready button atm
@@ -145,10 +169,12 @@ io.on('connection', socket => {
         console.log('Amount of ready players: ', count);
         if (count === currentConnections.length){
             Object.assign(gameConnections, currentConnections); // Assign by value not ref
+            console.log('game connections',  gameConnections);
             countdown(3);
         }
     });
 
+    // A players client side requests their nickname
     socket.on('request-nickname', (id) => {
         const index = currentConnections.findIndex(object => {
             return object.id === id;
@@ -157,11 +183,27 @@ io.on('connection', socket => {
         socket.emit('recieve-nickname',currentConnections[index].nickname);
     });
 
+    socket.on('next-round', (id) => {
+        const index = currentConnections.findIndex(object => {
+            return object.id === id;
+        });
+
+        if (index > -1) nextRoundVote++;
+        if (nextRoundVote === gameConnections.length){
+            resetGameVariables();
+            countdown(3);
+        }
+    });
+
+    //------------------------------------------------------
+    //               SHARED EVENTS
+    //------------------------------------------------------
+
+
     socket.on('disconnect', () => {
         playerNum = currentConnections.findIndex(object => {
-            return object.id === playerid ? playerid : socket.id;
+            return object.id === (playerid ? playerid : socket.id);
         }) + 1;
-        console.log('DISCONNECTED');
         // Remove player from connections
         currentConnections.splice(playerNum - 1, 1);
         
@@ -172,6 +214,7 @@ io.on('connection', socket => {
     })
 });
 
+// Used to display a countdown in seconds
 function countdown(countDown){
     let count = countDown;
     let interval = setInterval(() => {
@@ -185,11 +228,20 @@ function countdown(countDown){
     }, 1000);
 }
 
+function resetGameVariables(){
+    console.log('RESETTED GAME VARIABLES')
+    currentPlayerDefinitions = [];
+    numPlayersSubmitted = 0;
+    nextRoundVote = 0;
+    wordIndex = Math.floor(Math.random() * words.length);
+    currentPlayerDefinitions.push({definition: words[wordIndex].definition, playersChoosing: []});
+}
+
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Sever listening on port ${PORT}`));
 
-
-module.exports.totalPlayerScores = gameConnections;
-module.exports.currentPlayerScores = currentPlayerDefintions;
-
+module.exports.gameConnections = gameConnections;
+module.exports.currentPlayerDefinitions = function() {
+    return currentPlayerDefinitions;
+};

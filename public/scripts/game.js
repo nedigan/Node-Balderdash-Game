@@ -4,13 +4,15 @@ const socket = io();
 const id =  sessionStorage.getItem('id');
 let nickname = sessionStorage.getItem('nickname');
 
+// Asks server if the game is ready
 socket.on('connect', () => {
    socket.emit('check-game-status');
 });
 
+// Game is ready, now can start other processes
 socket.on('game-ready', () => {
-    socket.emit('player-exists', id);
-    socket.emit('request-nickname', id);
+    socket.emit('player-exists', id); // Check if player exists
+    socket.emit('request-nickname', id);  // Get player nickname
 });
 
 socket.on('fullroom', () => {
@@ -22,11 +24,11 @@ socket.on('recieve-nickname', (nick) => {
 });
 
 socket.on('no-game-playing', () =>{
-    window.location.replace('/index.html');
+    window.location.replace('/');
 });
 
 if (!nickname){
-    window.location.replace('/index.html');
+    window.location.replace('/');
 }
 
 let title = document.getElementById('title');
@@ -96,7 +98,7 @@ function displayDefinitions(definitions, correctDefinition){
     const centreDiv = document.getElementById('centre');
 
     const definitionsList = document.createElement('ul');
-    definitionsList.className = 'verticalList buttonList';
+    definitionsList.className = 'vertical-list button-list';
     for (let i = 0; i < definitions.length; i++){
         let definition = document.createElement('li');
         definition.textContent = definitions[i].definition;
