@@ -22,7 +22,7 @@ socket.on('countdown', (num) => {
         }
 
         countdownElement.textContent = num; 
-        num--
+        num--;
     }, 1000); 
 });
 

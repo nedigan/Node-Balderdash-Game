@@ -55,11 +55,7 @@ socket.on('player-ready', (connections) => {
 });
 
 socket.on('this-player-ready', (player) => {
-    if (player.ready) {
-        readyButton.textContent = "Unready";
-    }else{
-        readyButton.textContent = "Ready";
-    }
+
 });
 
 socket.on('player-left', (connections) => {
@@ -78,10 +74,16 @@ socket.on('countdown', (num) => {
         }
 
         countdownElement.textContent = num; 
-        num--
+        num--;
     }, 1000); 
 });
 
 readyButton.addEventListener('click', () => {
     socket.emit('ready-up');
+
+    if (readyButton.textContent === "Ready") {
+        readyButton.textContent = "Unready";
+    }else{
+        readyButton.textContent = "Ready";
+    }
 });

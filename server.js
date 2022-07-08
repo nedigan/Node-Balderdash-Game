@@ -164,7 +164,6 @@ io.on('connection', socket => {
         if (index < 0) return;
         currentConnections[index].ready = !currentConnections[index].ready;
         io.emit('player-ready', currentConnections);//Updates all players player list
-        socket.emit('this-player-ready', currentConnections[index]);//Updates this players ready button atm
 
         const count = currentConnections.filter((obj) => obj.ready === true).length;
         console.log('Amount of ready players: ', count);

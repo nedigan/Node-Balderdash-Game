@@ -54,7 +54,7 @@ socket.on('already-submitted', () => {
 
 doneButton.addEventListener('click', () => {
     let definition = textbox.value;
-    playerFinished([doneButton, textbox, wordName]);
+    playerFinished([doneButton, textbox]);
     socket.emit('send-definition', definition, id);
     textbox.value = "";
 });
