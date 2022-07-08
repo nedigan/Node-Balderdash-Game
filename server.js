@@ -217,16 +217,7 @@ io.on('connection', socket => {
 
 // Used to display a countdown in seconds
 function countdown(countDown){
-    let count = countDown;
-    let interval = setInterval(() => {
-        if (count === 0){
-            clearInterval(interval);
-            io.emit('start-game');
-            return
-        }
-        console.log(count);
-        io.emit('countdown', count--);
-    }, 1000);
+    io.emit('countdown', countDown);
 }
 
 function resetGameVariables(){

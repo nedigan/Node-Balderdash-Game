@@ -23,10 +23,6 @@ socket.on('connect', () => {
     sessionStorage.setItem('nickname', nickname);
 });
 
-socket.on('start-game', () => {
-    window.location.replace("/game.html");
-});
-
 socket.on('fullroom', () => {
     window.location.replace("/fullroom.html");
 });
@@ -73,20 +69,17 @@ socket.on('player-left', (connections) => {
 
 socket.on('countdown', (num) => {
     const countdownElement = document.getElementById('countdown');
-    countdownElement.textContent = num;  
+
+    let interval = setInterval(() => {
+        countdownElement.textContent = num; 
+        num--
+
+        if (num === 0){
+            clearInterval(interval);
+            window.location.replace("/game.html");
+        }
+    }, 1000); 
 });
-
-/*socket.on('recieve-word', (word) => {
-    document.getElementById('word').textContent = `Word: ${word.word.trim()}`;
-    document.getElementById('definition').textContent = `Definition: ${word.definition.trim()}`;
-});*/
-
-/*function displayMessage(message, nickname){
-    let newMessage = document.createElement("li");
-    newMessage.textContent = `${nickname}: ${message}`;
-    messages.prepend(newMessage);
-}*/
-
 
 readyButton.addEventListener('click', () => {
     socket.emit('ready-up');
