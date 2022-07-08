@@ -65,6 +65,7 @@ socket.on('player-left', (connections) => {
 
 socket.on('countdown', (num) => {
     const countdownElement = document.getElementById('countdown');
+    readyButton.remove();
 
     let interval = setInterval(() => {
         if (num === 0){
