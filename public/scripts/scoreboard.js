@@ -15,13 +15,14 @@ socket.on('countdown', (num) => {
     const countdownElement = document.getElementById('countdown');
 
     let interval = setInterval(() => {
-        countdownElement.textContent = num; 
-        num--
-
         if (num === 0){
             clearInterval(interval);
             window.location.replace("/game.html");
+            return;
         }
+
+        countdownElement.textContent = num; 
+        num--
     }, 1000); 
 });
 
