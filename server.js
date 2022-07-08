@@ -127,6 +127,7 @@ io.on('connection', socket => {
 
         // when all players have locked in their selections, finalise player scores
         if (numPlayersSubmitted === currentConnections.length){
+            numPlayersSubmitted = 0;
             for (let i = 1; i < currentPlayerDefinitions.length; i++){
                 const tempPlayerIndex = gameConnections.findIndex(object => {
                     return object.id === currentPlayerDefinitions[i].id;

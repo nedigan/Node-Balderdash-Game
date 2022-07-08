@@ -28,7 +28,7 @@ html(lang='en')
                             span(class='white')= 'None'
                         br
                         span= 'Score: '  
-                        span(class='white')= '+' + player.score
+                        span(class='white')= '+' + (player.playersChoosing.length + (player.choseCorrect ? 1 : 0))
                         br
                         br
                         span= 'Total Score: '

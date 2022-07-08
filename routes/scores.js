@@ -6,13 +6,13 @@ const clone = require('lodash.clonedeep');
 router.get('/', (req, res) => {
     const scoresCopy = clone(scores.gameConnections);
     const definitions = scores.currentPlayerDefinitions();
-   /* if (scores.gameConnections.length === 0 || scores.currentPlayerDefinitions.length === 0){
+    if (scores.gameConnections.length === 0 || scores.currentPlayerDefinitions().length === 0){
         res.redirect('/index.html');
         return;
-    }*/
+    }
     // Assign current scores to gameConnections in seperate property
     for (let i = 0; i < scores.gameConnections.length; i++){
-        currentScoreIndex = definitions.findIndex(object => {
+        let currentScoreIndex = definitions.findIndex(object => {
             return object.id === scores.gameConnections[i].id;
         });
 

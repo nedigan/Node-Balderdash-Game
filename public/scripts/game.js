@@ -61,7 +61,18 @@ doneButton.addEventListener('click', () => {
 
 socket.on('show-current-word', (word) => {
     wordName.textContent = `Word: ${word}`;
+
+    removeLoadingScreen();
 });
+
+function removeLoadingScreen(){
+    const loader = document.querySelector(".page-loader-component");
+    loader.style.opacity = 0;
+
+    setTimeout(function(){
+	    loader.style.display = "none"
+	}, 1000)
+}
 
 let selectedDefinitionIndex = null;
 
