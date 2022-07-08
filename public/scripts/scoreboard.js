@@ -1,6 +1,7 @@
 const socket = io();
 const nextRoundButton = document.getElementById('next-round');
 const toLobbyButton = document.getElementById('back-to-lobby');
+const nickname = sessionStorage.getItem('nickname');
 
 const id =  sessionStorage.getItem('id');
 if (id === null){
@@ -30,9 +31,17 @@ socket.on('start-game', () => {
     window.location.replace('/game.html');
 });
 
+socket.on('to-lobby', () => {
+    window.location.replace(`/lobby.html?nickname=${nickname}`);
+});
+
 nextRoundButton.addEventListener('click', () => {
     socket.emit('next-round', id)
     playerFinished([nextRoundButton, toLobbyButton])
+});
+
+toLobbyButton.addEventListener('click', () => {
+    socket.emit('send-to-lobby');
 });
 
 function playerFinished(removeElementList){

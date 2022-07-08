@@ -195,6 +195,11 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('send-to-lobby', () => {
+        resetGameVariables();
+        io.emit('to-lobby');
+    });
+
     //------------------------------------------------------
     //               SHARED EVENTS
     //------------------------------------------------------
