@@ -56,6 +56,8 @@ io.on('connection', socket => {
     socket.on('chosen-deck', (deckIndex) => {
         currentDeck = allDecks[deckIndex];
         resetGameVariables();
+        dealingPlayerIndex += 1;
+        if (dealingPlayerIndex > gameConnections.length - 1) dealingPlayerIndex = 0; // wrap around
         io.emit('go-to-game');
     });
 
@@ -210,6 +212,7 @@ io.on('connection', socket => {
 
     socket.on('send-to-lobby', () => {
         resetGameVariables();
+        dealingPlayerIndex = 0;
         io.emit('to-lobby');
     });
 
