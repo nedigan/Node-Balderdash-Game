@@ -5,7 +5,7 @@ const app = express();
 const server = http.createServer(app);
 const socketio = require('socket.io');
 const io = socketio(server);
-const words = require('./words.json');
+const words = require('.definitions/words.json');
 const scores = require('./routes/scores');
 
 
