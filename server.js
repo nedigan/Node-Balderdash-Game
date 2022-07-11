@@ -82,7 +82,6 @@ io.on('connection', socket => {
         // If the player has reconnected and already submitted
         if (defIndex > -1){
             socket.emit('already-submitted');
-            console.log(`${gameConnections[index].nickname} has already submitted`);
             return;
         }
 
@@ -181,6 +180,10 @@ io.on('connection', socket => {
         currentConnections[index].ready = !currentConnections[index].ready;
         io.emit('player-ready', currentConnections);//Updates all players player list
 
+        if (gameConnections.length > 0){ // Game in progress
+            return;
+        }
+
         const count = currentConnections.filter((obj) => obj.ready === true).length;
         console.log('Amount of ready players: ', count);
         if (count === currentConnections.length){
@@ -241,7 +244,6 @@ function countdown(countDown){
 }
 
 function resetGameVariables(){
-    console.log('RESETTED GAME VARIABLES')
     currentPlayerDefinitions = [];
     numPlayersSubmitted = 0;
     nextRoundVote = 0;
