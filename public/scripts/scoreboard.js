@@ -18,7 +18,7 @@ socket.on('countdown', (num) => {
     let interval = setInterval(() => {
         if (num === 0){
             clearInterval(interval);
-            window.location.replace("/game.html");
+            window.location.replace("/deckselection.html");
             return;
         }
 

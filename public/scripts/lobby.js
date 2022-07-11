@@ -54,10 +54,6 @@ socket.on('player-ready', (connections) => {
     // Maybe put stuff later when players ready up
 });
 
-socket.on('this-player-ready', (player) => {
-
-});
-
 socket.on('player-left', (connections) => {
     updatePlayerList(connections);
     // Maybe put stuff later when a player leaves
@@ -70,7 +66,7 @@ socket.on('countdown', (num) => {
     let interval = setInterval(() => {
         if (num === 0){
             clearInterval(interval);
-            window.location.replace("/game.html");
+            window.location.replace("/deckselection.html");
             return;
         }
 

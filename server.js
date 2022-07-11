@@ -5,7 +5,8 @@ const app = express();
 const server = http.createServer(app);
 const socketio = require('socket.io');
 const io = socketio(server);
-const words = require('.definitions/words.json');
+const words = require('./definitions/words.json');
+const acronyms = require('./definitions/acronyms.json');
 const scores = require('./routes/scores');
 
 
@@ -24,13 +25,16 @@ let gameConnections = [];
 let currentPlayerDefinitions = [];
 let numPlayersSubmitted = 0;
 let nextRoundVote = 0;
+let dealingPlayerIndex = 0;
+const allDecks = [words, acronyms];
+let currentDeck = allDecks[0];
 
 // Max Number of players
 const maxPlayers = 4;
 
-let wordIndex = Math.floor(Math.random() * words.length);
+let wordIndex = Math.floor(Math.random() * currentDeck.length);
 // Index 0 is correct definition
-currentPlayerDefinitions.push({definition: words[wordIndex].definition, playersChoosing: []});
+currentPlayerDefinitions.push({definition: currentDeck[wordIndex].definition, playersChoosing: []});
 
 // listen for connections
 io.on('connection', socket => {
@@ -44,6 +48,16 @@ io.on('connection', socket => {
     //------------------------------------------------------
     //               GAME EVENTS
     //------------------------------------------------------
+
+    if (gameConnections.length > 0){
+        socket.emit('dealing-player', gameConnections[dealingPlayerIndex]);   
+    }
+    
+    socket.on('chosen-deck', (deckIndex) => {
+        currentDeck = allDecks[deckIndex];
+        resetGameVariables();
+        io.emit('go-to-game');
+    });
 
     // Checks if the player exists in the lobby and calls events accordingly
     socket.on('player-exists', (id) => {
@@ -70,7 +84,7 @@ io.on('connection', socket => {
             return;
         }
 
-        socket.emit('show-current-word', words[wordIndex].word);
+        socket.emit('show-current-word', currentDeck[wordIndex].word);
     });
 
     // Checks if the game has started, if it hasnt throws an error and sends users back
@@ -94,7 +108,7 @@ io.on('connection', socket => {
 
         currentPlayerDefinitions.push({definition: definition, id: id, playersChoosing: [], choseCorrect: false});
         console.log('Current player definitions: ',currentPlayerDefinitions);
-        if (currentPlayerDefinitions.length === maxPlayers + 1) {
+        if (currentPlayerDefinitions.length === gameConnections.length + 1) {
             io.emit('players-finished', currentPlayerDefinitions);
         }
     });
@@ -151,7 +165,7 @@ io.on('connection', socket => {
         let playerNum = currentConnections.push({id: socket.id, nickname: nickname, ready: false, score: 0});
 
         socket.emit('show-player-num', playerNum);
-        //socket.emit('recieve-word', words[wordIndex]);
+        //socket.emit('recieve-word', currentDeck[wordIndex]);
         io.emit('player-joined', currentConnections);
     });
     
@@ -190,7 +204,6 @@ io.on('connection', socket => {
 
         if (index > -1) nextRoundVote++;
         if (nextRoundVote === gameConnections.length){
-            resetGameVariables();
             countdown(3);
         }
     });
@@ -229,8 +242,8 @@ function resetGameVariables(){
     currentPlayerDefinitions = [];
     numPlayersSubmitted = 0;
     nextRoundVote = 0;
-    wordIndex = Math.floor(Math.random() * words.length);
-    currentPlayerDefinitions.push({definition: words[wordIndex].definition, playersChoosing: []});
+    wordIndex = Math.floor(Math.random() * currentDeck.length);
+    currentPlayerDefinitions.push({definition: currentDeck[wordIndex].definition, playersChoosing: []});
 }
 
 // Start server

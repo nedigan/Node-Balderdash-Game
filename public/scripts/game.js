@@ -1,35 +1,7 @@
-// NETWORKING CODE
-
-const socket = io();
-const id =  sessionStorage.getItem('id');
-let nickname = sessionStorage.getItem('nickname');
-
-// Asks server if the game is ready
-socket.on('connect', () => {
-   socket.emit('check-game-status');
+socket.on('request-current-time', (time) => {
+    countdown(time);
 });
 
-// Game is ready, now can start other processes
-socket.on('game-ready', () => {
-    socket.emit('player-exists', id); // Check if player exists
-    socket.emit('request-nickname', id);  // Get player nickname
-});
-
-socket.on('fullroom', () => {
-    window.location.replace("/fullroom.html");
-});
-
-socket.on('recieve-nickname', (nick) => {
-    nickname = nick;
-});
-
-socket.on('no-game-playing', () =>{
-    window.location.replace('/');
-});
-
-if (!nickname){
-    window.location.replace('/');
-}
 
 let title = document.getElementById('title');
 title.textContent = nickname;
@@ -47,6 +19,22 @@ textbox.addEventListener('keypress', (event) => {
         doneButton.click();
     }
 });
+
+
+let interval = null;
+function countdown(num){
+    const countdownElement = document.getElementById('countdown');
+    
+    interval = setInterval(() => {
+        if (num === 0){
+            clearInterval(interval);
+            return;
+        }
+
+        countdownElement.textContent = `Time: ${num}`; 
+        num--;
+    }, 1000); 
+}
 
 socket.on('already-submitted', () => {
     playerFinished([doneButton, textbox, wordName]);
@@ -78,6 +66,7 @@ let selectedDefinitionIndex = null;
 
 socket.on('players-finished', (definitions) => {
     const correctDefinition = definitions[0];
+    clearInterval(interval);
     // Randomly suffle the definitions
     definitions.sort(() => Math.random() - 0.5);
     const list = displayDefinitions(definitions, correctDefinition);

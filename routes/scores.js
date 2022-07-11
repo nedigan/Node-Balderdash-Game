@@ -7,7 +7,7 @@ router.get('/', (req, res) => {
     const scoresCopy = clone(scores.gameConnections);
     const definitions = scores.currentPlayerDefinitions();
     if (scores.gameConnections.length === 0 || scores.currentPlayerDefinitions().length === 0){
-        res.redirect('/index.html');
+        res.redirect('/');
         return;
     }
     // Assign current scores to gameConnections in seperate property
