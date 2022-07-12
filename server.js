@@ -215,6 +215,7 @@ io.on('connection', socket => {
 
     socket.on('send-to-lobby', () => {
         resetGameVariables();
+        gameConnections = [];
         dealingPlayerIndex = 0;
         io.emit('to-lobby');
     });
@@ -255,7 +256,9 @@ function resetGameVariables(){
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Sever listening on port ${PORT}`));
 
-module.exports.gameConnections = gameConnections;
+module.exports.gameConnections = function () {
+    return gameConnections;
+}
 module.exports.currentPlayerDefinitions = function() {
     return currentPlayerDefinitions;
 };
