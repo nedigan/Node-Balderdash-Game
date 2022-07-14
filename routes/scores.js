@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
         scoresCopy[i].choseCorrect = definitions[currentScoreIndex].choseCorrect;
     }
 
-    res.render('scores', { title: 'Scoreboard', players: scoresCopy});
+    res.render('scores', { title: 'Scoreboard', players: scoresCopy, word: definitions[0]});
 });
 
 module.exports = router;

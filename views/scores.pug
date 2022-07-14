@@ -9,6 +9,7 @@ html(lang='en')
     body 
         div(class='centre')
             h1= title 
+            h2= 'Correct Definition: ' + word.definition
             h1(class="countdown" id="countdown")
             ul(class='vertical-list score-board-list')
                 each player in players
