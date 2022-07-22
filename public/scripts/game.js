@@ -20,6 +20,11 @@ textbox.addEventListener('keypress', (event) => {
     }
 });
 
+socket.on('already-submitted', () => {
+    playerFinished([doneButton, textbox]);
+
+    removeLoadingScreen();
+});
 
 let interval = null;
 function countdown(num){
@@ -35,10 +40,6 @@ function countdown(num){
         num--;
     }, 1000); 
 }
-
-socket.on('already-submitted', () => {
-    playerFinished([doneButton, textbox, wordName]);
-});
 
 doneButton.addEventListener('click', () => {
     let definition = textbox.value;
@@ -65,6 +66,7 @@ function removeLoadingScreen(){
 let selectedDefinitionIndex = null;
 
 socket.on('players-finished', (definitions) => {
+    waitingText.innerHTML = "";
     const correctDefinition = definitions[0];
     clearInterval(interval);
     // Randomly suffle the definitions
@@ -94,13 +96,13 @@ function selectDefiniton(prev, current){
 }
 
 function displayDefinitions(definitions, correctDefinition){
-    waitingText.innerHTML = "";
     const centreDiv = document.getElementById('centre');
 
     const definitionsList = document.createElement('ul');
     definitionsList.className = 'vertical-list button-list';
     for (let i = 0; i < definitions.length; i++){
-        let definition = document.createElement('li');
+        if (definitions[i].id === id) continue; // Dont show own
+        let definition = document.createElement('li'); 
         definition.textContent = definitions[i].definition;
         definitionsList.appendChild(definition);
     }
@@ -117,12 +119,16 @@ function displayDefinitions(definitions, correctDefinition){
 
     // Lock in answer
     answerButton.addEventListener('click', () => {
-        socket.emit('lock-in-answer', id, definitions[selectedDefinitionIndex])
-        playerFinished([answerButton, definitionsList])
+        socket.emit('lock-in-answer', id, definitions[selectedDefinitionIndex]);
+        playerFinished([answerButton, definitionsList]);
     });
 
     return definitionsList;
 };
+
+socket.on('already-chose-answer', () => {
+    playerFinished([document.getElementById('select'), definitionsList]);
+});
 
 function playerFinished(removeElementList){
     for (let i = 0; i < removeElementList.length; i++){

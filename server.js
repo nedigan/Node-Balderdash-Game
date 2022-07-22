@@ -23,6 +23,7 @@ let gameConnections = [];
 
 // game variables
 let currentPlayerDefinitions = [];
+let playerSelections = [];
 let numPlayersSubmitted = 0;
 let nextRoundVote = 0;
 let dealingPlayerIndex = 0;
@@ -82,7 +83,20 @@ io.on('connection', socket => {
         // If the player has reconnected and already submitted
         if (defIndex > -1){
             socket.emit('already-submitted');
-            return;
+        }
+
+        // If all players have already submitted definitions
+        if (currentPlayerDefinitions.length - 1 === gameConnections.length) {
+            socket.emit('players-finished',currentPlayerDefinitions);
+            
+            // If this player has already selected an answer
+            const playerIndex = playerSelections.findIndex(object => {
+                return object.id === id;
+            });
+
+            if (playerIndex > -1){
+                socket.emit('already-chose-answer');
+            }
         }
 
         socket.emit('show-current-word', currentDeck[wordIndex].word);
@@ -116,9 +130,16 @@ io.on('connection', socket => {
 
     // locks in this players answer for which definition they think is correct
     socket.on('lock-in-answer', (id, answer) => {
-        if (numPlayersSubmitted >= currentConnections.length ) return;
+        if (playerSelections.length >= currentConnections.length ) return;
+        const selectionIndex = playerSelections.findIndex(object => {
+            return object === id;
+        });
+        if (selectionIndex < 0) {
+            playerSelections.push(id);
+        }else{
+            return;
+        }
 
-        numPlayersSubmitted += 1;
         const chosenDefinitionIndex = currentPlayerDefinitions.findIndex(object => {
             return object.id === answer.id;
         });
@@ -132,7 +153,6 @@ io.on('connection', socket => {
         });
 
         if (answer.definition === currentPlayerDefinitions[0].definition){ // If player chose correct
-            console.log('correct');
             gameConnections[thisPlayerIndex].score += 1;
             currentPlayerDefinitions[thisDefinitionIndex].choseCorrect = true;
             currentPlayerDefinitions[0].playersChoosing.push(gameConnections[thisPlayerIndex].nickname);
@@ -141,8 +161,7 @@ io.on('connection', socket => {
         }
 
         // when all players have locked in their selections, finalise player scores
-        if (numPlayersSubmitted === currentConnections.length){
-            numPlayersSubmitted = 0;
+        if (playerSelections.length === currentConnections.length){
             for (let i = 1; i < currentPlayerDefinitions.length; i++){
                 const tempPlayerIndex = gameConnections.findIndex(object => {
                     return object.id === currentPlayerDefinitions[i].id;
@@ -245,6 +264,7 @@ function countdown(countDown){
 }
 
 function resetGameVariables(){
+    playerSelections = [];
     currentPlayerDefinitions = [];
     numPlayersSubmitted = 0;
     nextRoundVote = 0;
