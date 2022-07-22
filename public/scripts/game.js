@@ -69,6 +69,12 @@ socket.on('players-finished', (definitions) => {
     waitingText.innerHTML = "";
     const correctDefinition = definitions[0];
     clearInterval(interval);
+
+    const thisPlayersDefinitionIndex = definitions.findIndex(object => {
+        return object.id === id;
+    });
+    definitions.splice(thisPlayersDefinitionIndex, 1);
+
     // Randomly suffle the definitions
     definitions.sort(() => Math.random() - 0.5);
     const list = displayDefinitions(definitions, correctDefinition);
@@ -101,7 +107,6 @@ function displayDefinitions(definitions, correctDefinition){
     const definitionsList = document.createElement('ul');
     definitionsList.className = 'vertical-list button-list';
     for (let i = 0; i < definitions.length; i++){
-        if (definitions[i].id === id) continue; // Dont show own
         let definition = document.createElement('li'); 
         definition.textContent = definitions[i].definition;
         definitionsList.appendChild(definition);
