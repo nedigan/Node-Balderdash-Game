@@ -255,6 +255,12 @@ io.on('connection', socket => {
 
         // Update all players current player number
         io.emit('disconnections', playerNum);
+
+        // If only one or no player(s) left, cancel game
+        if (currentConnections.length < 2){
+            io.emit('no-game-playing');
+            resetGameVariables();
+        }
     })
 });
 
