@@ -257,10 +257,13 @@ io.on('connection', socket => {
         io.emit('disconnections', playerNum);
 
         // If only one or no player(s) left, cancel game
-        if (currentConnections.length < 2){
-            io.emit('no-game-playing');
-            resetGameVariables();
-        }
+        setTimeout(() => {
+            if (currentConnections.length < 2){
+                io.emit('no-game-playing');
+                gameConnections = [];
+                resetGameVariables();
+            }
+        }, 2000);
     })
 });
 
