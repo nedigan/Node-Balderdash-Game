@@ -7,16 +7,7 @@ if (!nickname || !serverId){
     window.location.replace("/");
 }
 
-socket.on('show-player-num', (num) => {
-    changePlayerNum(num);  
-
-    socket.on('disconnections', (disconnected) => {
-        if (num > disconnected){
-            num -= 1;
-            changePlayerNum(num);
-        }
-    });
-});
+document.getElementById('code').textContent = `CODE: ${serverId}`;
 
 socket.on('connect', () => {
     socket.emit('assign-server', serverId);
@@ -27,11 +18,7 @@ socket.on('connect', () => {
 
 socket.on('fullroom', () => {
     window.location.replace("/fullroom.html");
-});
-
-function changePlayerNum(number){
-    document.getElementById('player-num').innerHTML = `YOU ARE PLAYER ${number}!`
-}  
+}); 
 
 const playerList = document.getElementById('playerlist');
 const readyButton = document.getElementById('ready');
