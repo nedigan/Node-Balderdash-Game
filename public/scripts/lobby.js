@@ -1,11 +1,11 @@
 const socket = io();
+const serverId =  sessionStorage.getItem('serverId');
 
 let urlParams = new URLSearchParams(window.location.search);
 const nickname = urlParams.get('nickname');
-if (!nickname){
+if (!nickname || !serverId){
     window.location.replace("/");
 }
-socket.emit('add-player', nickname);
 
 socket.on('show-player-num', (num) => {
     changePlayerNum(num);  
@@ -19,6 +19,8 @@ socket.on('show-player-num', (num) => {
 });
 
 socket.on('connect', () => {
+    socket.emit('assign-server', serverId);
+    socket.emit('add-player', nickname);
     sessionStorage.setItem('id', socket.id);
     sessionStorage.setItem('nickname', nickname);
 });

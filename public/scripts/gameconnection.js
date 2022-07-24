@@ -3,9 +3,11 @@
 const socket = io();
 const id =  sessionStorage.getItem('id');
 let nickname = sessionStorage.getItem('nickname');
+const serverId =  sessionStorage.getItem('serverId');
 
 // Asks server if the game is ready
 socket.on('connect', () => {
+    socket.emit('assign-server', serverId);
     socket.emit('check-game-status');
  });
 

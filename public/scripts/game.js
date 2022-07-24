@@ -92,7 +92,7 @@ socket.on('players-finished', (definitions) => {
 });
 
 socket.on('display-scores', () => {
-    window.location.replace('/scores');
+    window.location.replace(`/scores/${serverId}`);
 });
 
 function selectDefiniton(prev, current){

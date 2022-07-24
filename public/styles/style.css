@@ -75,6 +75,36 @@ button {
     width: 30%;
 }
 
+.nickname-field{
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.nickname-field input{
+    width: auto;
+    height: auto;
+    font-size: 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content:space-between;
+    width: 100%;
+}
+
+.item {
+    margin: 50px;
+    width: 50%;
+    justify-content: center;
+}
+
+.item button{
+    width: 50%;
+    height: 75px;
+}
+
 .centre {
     display: flex;
     justify-content: center;

@@ -4,12 +4,15 @@ const toLobbyButton = document.getElementById('back-to-lobby');
 const nickname = sessionStorage.getItem('nickname');
 
 const id =  sessionStorage.getItem('id');
+const serverId = sessionStorage.getItem('serverId');
+
 if (id === null){
     window.location.replace('/');
 }
 
 socket.on('connect', () => {
-    socket.emit('player-exists', id);
+    socket.emit('assign-server', serverId);
+    socket.emit('player-exists', id);   
 });
 
 socket.on('countdown', (num) => {
