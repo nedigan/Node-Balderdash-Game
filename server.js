@@ -324,7 +324,7 @@ io.on('connection', socket => {
                 servers.splice(index, 1);
             }
             console.log('Servers: ', servers);
-        }, 2000);
+        }, 4000);
     })
 });
 
