@@ -323,7 +323,7 @@ function resetGameVariables(currentServer){
 }
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 server.listen(PORT, () => console.log(`Sever listening on port ${PORT}`));
 
 module.exports.io = function () {
