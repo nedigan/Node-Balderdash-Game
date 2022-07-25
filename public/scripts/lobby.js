@@ -16,6 +16,10 @@ socket.on('connect', () => {
     sessionStorage.setItem('nickname', nickname);
 });
 
+socket.on('invalid-server', () => {
+    window.location.replace("/");
+});
+
 socket.on('fullroom', () => {
     window.location.replace("/fullroom.html");
 }); 

@@ -167,6 +167,8 @@ io.on('connection', socket => {
 
     // Adds players to current connections when joining lobby
     socket.on('add-player', (nickname) => {
+        if (!currentServer) return;
+
         if (currentServer.currentConnections.length === maxPlayers){
             console.log('Room is full');
             socket.emit('fullroom');
@@ -275,6 +277,12 @@ io.on('connection', socket => {
         currentServer = servers.find((object) =>{
             return object.id === code;
         });
+
+        if (currentServer == undefined){
+            socket.emit('invalid-server');
+            return;
+        }
+
         socket.join(code);
     });
 
@@ -284,7 +292,7 @@ io.on('connection', socket => {
 
 
     socket.on('disconnect', () => {
-        if (currentServer === null) return;
+        if (currentServer === null || currentServer.currentConnections === null) return;
 
         playerNum = currentServer.currentConnections.findIndex(object => {
             return object.id === (playerid ? playerid : socket.id);
