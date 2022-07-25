@@ -85,7 +85,15 @@ io.on('connection', socket => {
 
     // Checks if the game has started, if it hasnt throws an error and sends users back
     socket.on('check-game-status', () => {
+        if (currentServer == null){
+            socket.emit('no-game-playing');
+            return;
+        }
+
+        console.log(currentServer);
+
         if (currentServer.gameConnections.length < 1){ // IF GAME HASN'T STARTED
+            console.log('Send him back from check game status');
             io.to(currentServer.id).emit('no-game-playing'); // SEND PLAYERS BACK TO MAIN PAGE
             return;
         }
@@ -155,8 +163,6 @@ io.on('connection', socket => {
                 currentServer.gameConnections[tempPlayerIndex].score += currentServer.currentPlayerDefinitions[i].playersChoosing.length;
                 console.log(`${currentServer.gameConnections[tempPlayerIndex].nickname}'s score: ${currentServer.gameConnections[tempPlayerIndex].score}`);
             }
-            console.log('Current player definitions', currentServer.currentPlayerDefinitions);
-            console.log('Game connections', currentServer.gameConnections);
             io.to(currentServer.id).emit('display-scores');
         }
     });
@@ -200,14 +206,12 @@ io.on('connection', socket => {
         console.log('Amount of ready players: ', count);
         if (count === currentServer.currentConnections.length){
             Object.assign(currentServer.gameConnections, currentServer.currentConnections); // Assign by value not ref
-            console.log('game connections',  currentServer.gameConnections);
             countdown(3, currentServer);
         }
     });
 
     // A players client side requests their nickname
     socket.on('request-nickname', (id) => {
-        console.log(currentServer.currentConnections);
         const index = currentServer.currentConnections.findIndex(object => {
             return object.id === id;
         });
@@ -265,6 +269,7 @@ io.on('connection', socket => {
         server.currentDeck = allDecks[0];
         server.wordIndex = Math.floor(Math.random() * server.currentDeck.length);
         servers.push(server);
+        console.log('Servers: ', servers);
 
         currentServer = server;
         socket.join(code);
@@ -280,6 +285,7 @@ io.on('connection', socket => {
 
         if (currentServer == undefined){
             socket.emit('invalid-server');
+            console.log('sent em back from assign server');
             return;
         }
 
@@ -292,7 +298,7 @@ io.on('connection', socket => {
 
 
     socket.on('disconnect', () => {
-        if (currentServer === null || currentServer.currentConnections === null) return;
+        if (currentServer == null || currentServer.currentConnections == null) return;
 
         playerNum = currentServer.currentConnections.findIndex(object => {
             return object.id === (playerid ? playerid : socket.id);
@@ -307,11 +313,17 @@ io.on('connection', socket => {
 
         // If only one or no player(s) left, cancel game
         setTimeout(() => {
-            if (currentServer.currentConnections.length < 2){
+            if (currentServer.currentConnections.length === 0){
                 io.to(currentServer.id).emit('no-game-playing');
-                currentServer.gameConnections = [];
-                resetGameVariables(currentServer);
+                console.log('Sent em back from disconnect')
+                
+                const index = servers.findIndex((object) => {
+                    return object.id === currentServer.id;
+                });
+
+                servers.splice(index, 1);
             }
+            console.log('Servers: ', servers);
         }, 2000);
     })
 });
