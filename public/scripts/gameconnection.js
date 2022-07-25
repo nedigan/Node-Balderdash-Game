@@ -29,6 +29,6 @@ socket.on('no-game-playing', () =>{
     window.location.replace('/');
 });
 
-if (!nickname){
-    window.location.replace('/');
+if (!nickname || !serverId){
+    window.location.replace("/");
 }
