@@ -63,7 +63,7 @@ ul li {
 }
 
 button {
-    height: 50px;
+    min-height: 50px;
     background-color: white;
     margin-top: 10px;
     flex-grow: 1;
